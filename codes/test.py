@@ -15,19 +15,27 @@ def lit_image(chemin_image):
     image_gris = cv.cvtColor(image, cv.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
     return image_gris
 
-# Fonction pour afficher une image avec un titre
+# Fonction pour afficher une image avec un titre (utilise matplotlib)
 
 def affiche_image(titre, image):
-    cv.imshow(titre, image)
-    cv.waitKey(0)  # Attendre une touche pour fermer la fenêtre
-    cv.destroyAllWindows()
+    plt.imshow(image, cmap='gray')
+    plt.title(titre)
+    plt.axis('off')
+    plt.show()
 
 # Fonction pour identifier les deux classes dans une image d'origine
 
 def identif_classes(X):
     classes = np.unique(X)
-    if len(classes) != 2:
-        raise ValueError("L'image ne contient pas exactement deux classes.")
+    print(f"Classes trouvées : {classes}")  # Affichage des classes trouvées
+    if len(classes) < 2:
+        raise ValueError("L'image ne contient pas suffisamment de classes distinctes.")
+    elif len(classes) > 2:
+        # Binarisation pour réduire à deux classes
+        _, X_binaire = cv.threshold(X, 127, 255, cv.THRESH_BINARY)
+        classes = np.unique(X_binaire)
+        print(f"Après binarisation, classes : {classes}")
+        return classes[0], classes[1]
     return classes[0], classes[1]
 
 # Fonction pour ajouter un bruit gaussien à l'image
@@ -89,4 +97,3 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     plt.show()
-    
