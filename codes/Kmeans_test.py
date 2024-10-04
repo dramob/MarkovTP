@@ -9,8 +9,8 @@ if __name__ == "__main__":
         "./images_BW/alfa2.bmp",
         "./images_BW/beee2.bmp",
         "./images_BW/cible2.bmp",
-        "./images_reelles/15088.bmp",
-        "./images_reelles/3096.bmp"
+        "./images_BW/city2.bmp",
+        "./images_BW/veau2.bmp"
     ]
 
     # Paramètres des bruits

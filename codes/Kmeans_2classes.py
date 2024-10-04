@@ -16,12 +16,14 @@ def lit_image(chemin_image):
     image_gris = cv.cvtColor(image, cv.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
     return image_gris
 
-# Fonction pour afficher une image avec un titre (utilise matplotlib)
+# Fonction pour afficher et sauvegarder une image avec un titre (utilise matplotlib)
 
-def affiche_image(titre, image):
+def affiche_image(titre, image, save_path=None):
     plt.imshow(image, cmap='gray')
     plt.title(titre)
     plt.axis('off')
+    if save_path:
+        plt.savefig(save_path, bbox_inches='tight')
     plt.show()
 
 # Fonction pour identifier les deux classes dans une image d'origine
@@ -68,29 +70,26 @@ def taux_erreur(A, B):
     print(f"Taux d'erreur : {erreur * 100:.2f}%")
     return erreur
 
-
 if __name__ == "__main__":
 
     chemin = "./images_BW/alfa2.bmp"  # Remplacer par le bon chemin
     try:
         image = lit_image(chemin)
-        affiche_image("Image originale", image)
-
+        affiche_image("Image originale", image, save_path="image_originale.png")
+  
         # Identification des classes
         cl1, cl2 = identif_classes(image)
 
         # Ajout de bruit gaussien à l'image
         m1, sig1, m2, sig2 = 1, 1, 4, 1
         image_bruitee = bruit_gauss(image, cl1, cl2, m1, sig1, m2, sig2)
-        affiche_image("Image bruitée", image_bruitee)
-
+        affiche_image("Image bruitée", image_bruitee, save_path="image_bruitee.png")
+        
         # Segmentation par K-means
         image_segmentee = kmeans_segmentation(image_bruitee)
-        affiche_image("Image segmentée (K-means)", image_segmentee)
+        affiche_image("Image segmentée (K-means)", image_segmentee, save_path="image_segmentee_kmeans.png")
 
         # Calcul du taux d'erreur entre l'image originale et l'image segmentée
         taux_erreur(image, image_segmentee)
     except ValueError as e:
         print(e)
-
-    
