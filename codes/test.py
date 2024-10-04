@@ -38,7 +38,7 @@ def identif_classes(X):
         return classes[0], classes[1]
     return classes[0], classes[1]
 
-# Fonction pour ajouter un bruit gaussien à l'image
+
 
 def bruit_gauss(X, cl1, cl2, m1, sig1, m2, sig2):
     Y = np.copy(X)
@@ -71,8 +71,8 @@ if __name__ == "__main__":
         "./images_BW/alfa2.bmp",
         "./images_BW/beee2.bmp",
         "./images_BW/cible2.bmp",
-        "./images_réelles/15088.bmp",
-        "./images_réelles/3096.bmp"
+        "./images_reelles/15088.bmp",
+        "./images_reelles/3096.bmp"
     ]  # Remplacer par vos images
     bruits = [(1, 1, 4, 1), (1, 1, 2, 1), (1, 1, 1, 9)]
 
