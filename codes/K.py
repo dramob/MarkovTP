@@ -1,14 +1,17 @@
+import os
 import numpy as np
 import pandas as pd
-from testo import lit_image, identif_classes, bruit_gauss, calc_probaprio, MPM_Gauss, taux_erreur
+import matplotlib.pyplot as plt
+from Kmeans_2classes import lit_image, identif_classes, bruit_gauss, kmeans_segmentation, taux_erreur
 
 if __name__ == "__main__":
+    # Chemins des images à tester
     images_chemins = [
         "./images_BW/alfa2.bmp",
         "./images_BW/beee2.bmp",
         "./images_BW/cible2.bmp",
-        "./images_réelles/15088.bmp",
-        "./images_réelles/3096.bmp"
+        "./images_BW/city2.bmp",
+        "./images_BW/veau2.bmp"
     ]
 
     # Paramètres des bruits
@@ -38,11 +41,8 @@ if __name__ == "__main__":
                     # Ajout de bruit gaussien à l'image
                     image_bruitee = bruit_gauss(image, cl1, cl2, m1, sig1, m2, sig2)
 
-                    # Calcul des probabilités a priori
-                    p1, p2 = calc_probaprio(image, cl1, cl2)
-
-                    # Segmentation par MPM Gaussien
-                    image_segmentee = MPM_Gauss(image_bruitee, cl1, cl2, p1, p2, m1, sig1, m2, sig2)
+                    # Segmentation par K-means
+                    image_segmentee = kmeans_segmentation(image_bruitee)
 
                     # Calcul du taux d'erreur entre l'image originale et l'image segmentée
                     erreur = taux_erreur(image, image_segmentee)
@@ -51,15 +51,17 @@ if __name__ == "__main__":
                 # Calcul des statistiques pour cette configuration
                 taux_erreur_moyen = np.mean(erreurs)
                 ecart_type_erreur = np.std(erreurs)
-
+                
                 # Ajouter les résultats à la liste
                 results.append({
-                    'Image': chemin_image,
+                    'Image': os.path.basename(chemin_image),
                     'Bruit': f"m1={m1}, sig1={sig1}, m2={m2}, sig2={sig2}",
                     'Taux d\'erreur moyen (%)': taux_erreur_moyen * 100,
                     'Écart-type (%)': ecart_type_erreur * 100
                 })
+
                 print(f"Image: {chemin_image}, Bruit {j + 1}: Taux d'erreur moyen = {taux_erreur_moyen * 100:.2f}%")
+
         except ValueError as e:
             print(e)
 
@@ -71,5 +73,5 @@ if __name__ == "__main__":
     print(df_results)
 
     # Sauvegarder le DataFrame dans un fichier CSV
-    df_results.to_csv('resultats_aveugle_supervise.csv', index=False)
-    print("\nLes résultats ont été sauvegardés dans 'resultats_aveugle_supervise.csv'.")
+    df_results.to_csv('resultats_segmentation.csv', index=False)
+    print("\nLes résultats ont été sauvegardés dans 'resultats_segmentation.csv'.")

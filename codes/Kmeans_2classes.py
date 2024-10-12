@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import cv2 as cv
+
+
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
@@ -51,7 +53,7 @@ def bruit_gauss(X, cl1, cl2, m1, sig1, m2, sig2):
     Y[X == cl2] = X[X == cl2] + bruit_cl2[X == cl2]
     return np.clip(Y, 0, 255).astype(np.uint8)
 
-# Fonction pour appliquer la segmentation k-means à une image bruitée
+
 
 def kmeans_segmentation(image_bruitee, n_clusters=2):
     # Transformation de l'image en un vecteur de pixels
