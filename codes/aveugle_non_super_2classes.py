@@ -1,47 +1,136 @@
 import numpy as np
-import cv2 as cv
+import matplotlib.pyplot as plt
+import os
 from scipy.stats import norm
-from Kmeans_2classes import lit_image, identif_classes, bruit_gauss, taux_erreur, affiche_image
-from init_param import init_param
-from calc_EM import calc_EM
+import pandas as pd
 
-def calc_probaprio(X, cl1, cl2):
-    p1 = np.mean(X == cl1)
-    p2 = 1 - p1
-    return p1, p2
+# Créer le dossier pour sauvegarder les résultats
+output_folder = 'part3'
+os.makedirs(output_folder, exist_ok=True)
 
-def MPM_Gauss(Y, cl1, cl2, p1, p2, m1, sig1, m2, sig2):
+# Question 7: Fonctions de lecture et affichage d'image
+def lit_image(chemin_image):
+    image = plt.imread(chemin_image)
+    if image.ndim == 3:
+        image = image[:, :, 0]  # Convertir en niveaux de gris si nécessaire
+    return image
+
+def affiche_image(titre, image, save_path=None):
+    plt.imshow(image, cmap='gray')
+    plt.title(titre)
+    plt.axis('off')
+    if save_path:
+        plt.savefig(save_path, bbox_inches='tight')
+    plt.show()
+
+def identif_classes(X):
+    classes = np.unique(X)
+    return classes[0], classes[1]
+
+def bruit_gauss(X, cl1, cl2, m1, sig1, m2, sig2):
+    Y = np.zeros_like(X, dtype=float)
+    Y[X == cl1] = np.random.normal(m1, sig1, size=(X == cl1).sum())
+    Y[X == cl2] = np.random.normal(m2, sig2, size=(X == cl2).sum())
+    return Y
+
+# Question 8: Fonction pour calculer les probabilités a posteriori
+def calc_probapost_Gauss(Y, p1, p2, m1, sig1, m2, sig2):
     f1 = p1 * norm.pdf(Y, m1, sig1)
     f2 = p2 * norm.pdf(Y, m2, sig2)
-    X_seg = np.where(f1 >= f2, cl1, cl2)
-    return X_seg
+    total = f1 + f2
+    Ppost_class1 = f1 / total
+    Ppost_class2 = f2 / total
+    Ppost = np.stack((Ppost_class1, Ppost_class2), axis=-1)
+    return Ppost
+
+# Question 9: Fonction de l'algorithme EM
+def calc_EM(Y, p10, p20, m10, sig10, m20, sig20, nb_iterEM):
+    p1, p2 = p10, p20
+    m1, sig1 = m10, sig10
+    m2, sig2 = m20, sig20
+
+    p1_list, p2_list, m1_list, m2_list, sig1_list, sig2_list = [], [], [], [], [], []
+
+    for _ in range(nb_iterEM):
+        # E-step
+        Ppost = calc_probapost_Gauss(Y, p1, p2, m1, sig1, m2, sig2)
+
+        # M-step
+        sum_Ppost_class1 = np.sum(Ppost[:, :, 0])
+        sum_Ppost_class2 = np.sum(Ppost[:, :, 1])
+        p1 = sum_Ppost_class1 / (sum_Ppost_class1 + sum_Ppost_class2)
+        p2 = 1 - p1
+        m1 = np.sum(Ppost[:, :, 0] * Y) / sum_Ppost_class1
+        m2 = np.sum(Ppost[:, :, 1] * Y) / sum_Ppost_class2
+        sig1 = np.sqrt(np.sum(Ppost[:, :, 0] * (Y - m1) ** 2) / sum_Ppost_class1)
+        sig2 = np.sqrt(np.sum(Ppost[:, :, 1] * (Y - m2) ** 2) / sum_Ppost_class2)
+
+        # Stocker les valeurs pour les graphiques
+        p1_list.append(p1)
+        p2_list.append(p2)
+        m1_list.append(m1)
+        m2_list.append(m2)
+        sig1_list.append(sig1)
+        sig2_list.append(sig2)
+
+    return p1, p2, m1, sig1, m2, sig2, p1_list, p2_list, m1_list, m2_list, sig1_list, sig2_list
 
 if __name__ == "__main__":
     # Lire et afficher l'image originale
     chemin_image = './images_BW/beee2.bmp'
     X = lit_image(chemin_image)
-    affiche_image('Image Originale', X)
-    
+    affiche_image('Image Originale', X, save_path=os.path.join(output_folder, 'image_originale.png'))
+
     # Identifier les classes
     cl1, cl2 = identif_classes(X)
-    
+
     # Ajouter du bruit gaussien
     m1_true, sig1_true = 1, 1
     m2_true, sig2_true = 4, 1
     Y = bruit_gauss(X, cl1, cl2, m1_true, sig1_true, m2_true, sig2_true)
-    affiche_image('Image Bruitée', Y)
-    
-    # Oublier tous les paramètres
-    p10, p20, m10, sig10, m20, sig20 = init_param(Y, iter_KM=10)
+    affiche_image('Image Bruitée', Y, save_path=os.path.join(output_folder, 'image_bruitee.png'))
+
+    # Réinitialiser les paramètres
+    p10, p20, m10, sig10, m20, sig20 = 0.5, 0.5, 0, 1, 0, 1
 
     # Estimation des paramètres par EM
     nb_iterEM = 10
-    p1, p2, m1, sig1, m2, sig2 = calc_EM(Y, p10, p20, m10, sig10, m20, sig20, nb_iterEM)
+    p1, p2, m1, sig1, m2, sig2, p1_list, p2_list, m1_list, m2_list, sig1_list, sig2_list = calc_EM(Y, p10, p20, m10, sig10, m20, sig20, nb_iterEM)
 
-    # Segmentation aveugle non supervisée
-    X_seg = MPM_Gauss(Y, cl1, cl2, p1, p2, m1, sig1, m2, sig2)
-    affiche_image('Image Segmentée', X_seg)
+    # Sauvegarder les résultats dans un fichier CSV
+    results_df = pd.DataFrame({
+        'Iteration': range(1, nb_iterEM + 1),
+        'p1': p1_list,
+        'p2': p2_list,
+        'm1': m1_list,
+        'm2': m2_list,
+        'sig1': sig1_list,
+        'sig2': sig2_list
+    })
+    results_csv_path = os.path.join(output_folder, 'em_results.csv')
+    results_df.to_csv(results_csv_path, index=False)
 
-    # Calcul du taux d'erreur
-    taux = taux_erreur(X, X_seg)
-    print(f"Taux d'erreur de segmentation : {taux:.2f}%")
+    # Afficher et sauvegarder les graphiques de l'évolution des paramètres
+    plt.figure()
+    plt.plot(p1_list, label='p1')
+    plt.plot(p2_list, label='p2')
+    plt.legend()
+    plt.title('Évolution des probabilités a priori')
+    plt.savefig(os.path.join(output_folder, 'evolution_probabilites.png'), bbox_inches='tight')
+    plt.show()
+
+    plt.figure()
+    plt.plot(m1_list, label='m1')
+    plt.plot(m2_list, label='m2')
+    plt.legend()
+    plt.title('Évolution des moyennes')
+    plt.savefig(os.path.join(output_folder, 'evolution_moyennes.png'), bbox_inches='tight')
+    plt.show()
+
+    plt.figure()
+    plt.plot(sig1_list, label='sigma1')
+    plt.plot(sig2_list, label='sigma2')
+    plt.legend()
+    plt.title('Évolution des écarts-types')
+    plt.savefig(os.path.join(output_folder, 'evolution_ecarts_types.png'), bbox_inches='tight')
+    plt.show()

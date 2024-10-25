@@ -1,5 +1,5 @@
 import numpy as np
-
+from calc_probapost_Gauss import calc_probapost_Gauss
 def tirage_apost(Ppost, cl1, cl2, m, n):
     X_post = np.zeros((m, n))
     for i in range(m):
