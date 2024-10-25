@@ -1,9 +1,9 @@
-# aveugle_non_super_2classes.py
-
 import numpy as np
 import cv2 as cv
 from scipy.stats import norm
 from Kmeans_2classes import lit_image, identif_classes, bruit_gauss, taux_erreur, affiche_image
+from init_param import init_param
+from calc_EM import calc_EM
 
 def calc_probaprio(X, cl1, cl2):
     p1 = np.mean(X == cl1)
@@ -31,12 +31,17 @@ if __name__ == "__main__":
     Y = bruit_gauss(X, cl1, cl2, m1_true, sig1_true, m2_true, sig2_true)
     affiche_image('Image Bruitée', Y)
     
-    # On oublie tout ce que l’on sait sur les paramètres %%%
-    p1 = 0
-    p2 = 0
-    m1 = 0
-    m2 = 0
-    sig1 = 0
-    sig2 = 0
-    
-    # Le reste du code sera complété dans les tâches suivantes
+    # Oublier tous les paramètres
+    p10, p20, m10, sig10, m20, sig20 = init_param(Y, iter_KM=10)
+
+    # Estimation des paramètres par EM
+    nb_iterEM = 10
+    p1, p2, m1, sig1, m2, sig2 = calc_EM(Y, p10, p20, m10, sig10, m20, sig20, nb_iterEM)
+
+    # Segmentation aveugle non supervisée
+    X_seg = MPM_Gauss(Y, cl1, cl2, p1, p2, m1, sig1, m2, sig2)
+    affiche_image('Image Segmentée', X_seg)
+
+    # Calcul du taux d'erreur
+    taux = taux_erreur(X, X_seg)
+    print(f"Taux d'erreur de segmentation : {taux:.2f}%")

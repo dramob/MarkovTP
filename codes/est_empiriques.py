@@ -1,5 +1,3 @@
-# est_empiriques.py
-
 import numpy as np
 
 def est_empiriques(X, Y, cl1, cl2):
