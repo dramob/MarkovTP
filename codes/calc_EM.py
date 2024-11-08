@@ -1,5 +1,7 @@
 import numpy as np
+
 from calc_probapost_Gauss import calc_probapost_Gauss
+
 
 def calc_EM(Y, p10, p20, m10, sig10, m20, sig20, nb_iterEM):
     p1, p2 = p10, p20

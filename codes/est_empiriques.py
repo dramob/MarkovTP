@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def est_empiriques(X, Y, cl1, cl2):
     p1 = np.mean(X == cl1)
     p2 = 1 - p1

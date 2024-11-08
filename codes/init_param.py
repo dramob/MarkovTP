@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.cluster import KMeans
 
+
 def init_param(Y, iter_KM=10):
     m, n = Y.shape
     Y_flat = Y.reshape(-1, 1)

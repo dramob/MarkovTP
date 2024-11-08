@@ -1,5 +1,8 @@
 import numpy as np
+
 from calc_probapost_Gauss import calc_probapost_Gauss
+
+
 def tirage_apost(Ppost, cl1, cl2, m, n):
     X_post = np.zeros((m, n))
     for i in range(m):
@@ -7,7 +10,9 @@ def tirage_apost(Ppost, cl1, cl2, m, n):
             X_post[i, j] = cl1 if np.random.rand() < Ppost[i, j, 0] else cl2
     return X_post
 
+
 from est_empiriques import est_empiriques
+
 
 def calc_SEM(Y, p10, p20, m10, sig10, m20, sig20, nb_iter):
     p1, p2 = p10, p20

@@ -1,7 +1,6 @@
-
-
-from scipy.stats import norm
 import numpy as np
+from scipy.stats import norm
+
 
 def calc_probapost_Gauss(Y, p1, p2, m1, sig1, m2, sig2):
     f1 = p1 * norm.pdf(Y, m1, sig1)

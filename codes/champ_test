@@ -3,11 +3,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-from sklearn.cluster import KMeans
 import os
 import pandas as pd
-from Champs_super import lit_image ,affiche_image,identif_classes,bruit_gauss, MPM_proba_gauss,calc_proba_champs ,nouvelle_image,taux_erreur
-# (Inclure toutes les fonctions précédentes ici)
+from Champs_super import (
+    lit_image,
+    affiche_image,
+    identif_classes,
+    bruit_gauss,
+    MPM_proba_gauss,
+    calc_proba_champs,
+    nouvelle_image,
+    taux_erreur,
+)
 
 if __name__ == "__main__":
     chemin_image = './images_BW/beee2.bmp'
@@ -42,7 +49,16 @@ if __name__ == "__main__":
 
         affiche_image(f'Image segmentée - Bruit {idx+1}', X_seg)
 
-        erreur = taux_erreur(X_seg, X)
+        # Vérification des labels et inversion si nécessaire
+        erreur1 = taux_erreur(X_seg, X)
+        # Inversion des labels dans X_seg
+        X_seg_inverted = np.where(X_seg == cl1, cl2, cl1)
+        erreur2 = taux_erreur(X_seg_inverted, X)
+        # Prendre le taux d'erreur minimum
+        erreur = min(erreur1, erreur2)
+        if erreur == erreur2:
+            X_seg = X_seg_inverted  # Mettre à jour X_seg avec les labels inversés
+
         erreurs.append(erreur)
         print(f'Bruit {idx+1} - Taux d\'erreur de segmentation : {erreur * 100:.2f}%')
 
@@ -53,10 +69,12 @@ if __name__ == "__main__":
         plt.imsave(f'{dossier}/image_bruitee.png', Y, cmap='gray')
         plt.imsave(f'{dossier}/image_segmentee.png', X_seg, cmap='gray')
 
-    # Présentation des résultats dans un tableau
+    # Présentation des résultats dans un tableau et sauvegarde dans un CSV
     data = {
         'Bruit': ['N(1,1)-N(4,1)', 'N(1,1)-N(2,1)', 'N(1,1)-N(1,9)'],
         'Taux d\'erreur (%)': [e * 100 for e in erreurs]
     }
     df = pd.DataFrame(data)
     print(df)
+    # Sauvegarde du tableau dans un fichier CSV
+    df.to_csv('question20/resultats_question20.csv', index=False)
