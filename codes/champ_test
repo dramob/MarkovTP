@@ -1,0 +1,62 @@
+# Champs_super_test.py
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+from sklearn.cluster import KMeans
+import os
+import pandas as pd
+from Champs_super import lit_image ,affiche_image,identif_classes,bruit_gauss, MPM_proba_gauss,calc_proba_champs ,nouvelle_image,taux_erreur
+# (Inclure toutes les fonctions précédentes ici)
+
+if __name__ == "__main__":
+    chemin_image = './images_BW/beee2.bmp'
+    X = lit_image(chemin_image)
+    affiche_image('Image originale', X)
+
+    cl1, cl2 = identif_classes(X)
+    classes = [cl1, cl2]
+
+    # Différents bruits à tester
+    bruits = [
+        {'m1': 1, 'sig1': 1, 'm2': 4, 'sig2': 1},
+        {'m1': 1, 'sig1': 1, 'm2': 2, 'sig2': 1},
+        {'m1': 1, 'sig1': 1, 'm2': 1, 'sig2': 3}  # sigma^2 = 9 donc sigma = 3
+    ]
+
+    erreurs = []
+    for idx, bruit in enumerate(bruits):
+        m1_true, sig1_true = bruit['m1'], bruit['sig1']
+        m2_true, sig2_true = bruit['m2'], bruit['sig2']
+        Y = bruit_gauss(X, cl1, cl2, m1_true, sig1_true, m2_true, sig2_true)
+        affiche_image(f'Image bruitée - Bruit {idx+1}', Y)
+
+        Ytrans = nouvelle_image(Y)
+        alpha = 1
+        proba = calc_proba_champs(alpha)
+        nb_iter = 10
+        nb_simu = 5
+
+        X_seg_trans = MPM_proba_gauss(Ytrans, classes, m1_true, sig1_true, m2_true, sig2_true, proba, nb_iter, nb_simu)
+        X_seg = X_seg_trans[1:-1,1:-1]
+
+        affiche_image(f'Image segmentée - Bruit {idx+1}', X_seg)
+
+        erreur = taux_erreur(X_seg, X)
+        erreurs.append(erreur)
+        print(f'Bruit {idx+1} - Taux d\'erreur de segmentation : {erreur * 100:.2f}%')
+
+        # Sauvegarde des outputs
+        dossier = f'question20/bruit_{idx+1}'
+        if not os.path.exists(dossier):
+            os.makedirs(dossier)
+        plt.imsave(f'{dossier}/image_bruitee.png', Y, cmap='gray')
+        plt.imsave(f'{dossier}/image_segmentee.png', X_seg, cmap='gray')
+
+    # Présentation des résultats dans un tableau
+    data = {
+        'Bruit': ['N(1,1)-N(4,1)', 'N(1,1)-N(2,1)', 'N(1,1)-N(1,9)'],
+        'Taux d\'erreur (%)': [e * 100 for e in erreurs]
+    }
+    df = pd.DataFrame(data)
+    print(df)

@@ -6,8 +6,8 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 # Créer les dossiers pour sauvegarder les résultats
-output_folder = 'part3'
-output_outputs_folder = 'part3_outputs'
+output_folder = 'part5'
+output_outputs_folder = 'part5_output'
 os.makedirs(output_folder, exist_ok=True)
 os.makedirs(output_outputs_folder, exist_ok=True)
 
