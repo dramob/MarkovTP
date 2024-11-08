@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 # Créer les dossiers pour sauvegarder les résultats
-output_folder = 'part4'
+output_folder = 'part9'
 output_outputs_folder = 'part4_out'
 os.makedirs(output_folder, exist_ok=True)
 os.makedirs(output_outputs_folder, exist_ok=True)
@@ -112,8 +112,8 @@ def init_param(Y, iter_KM=10):
 
 if __name__ == "__main__":
     # Images à utiliser
-    image_paths = ['./images_BW/beee2.bmp', './images_BW/image2.bmp', './images_BW/image3.bmp',
-                   './images_BW/image4.bmp', './images_BW/image5.bmp']
+    image_paths = ['./images_BW/alfa2.bmp', './images_BW/beee2.bmp', './images_BW/cible2.bmp',
+                   './images_BW/city2.bmp', './images_BW/veau2.bmp']
     
     bruits = [
         (1, 1, 4, 1),  # N(1, 1) - N(4, 1)
@@ -163,5 +163,3 @@ if __name__ == "__main__":
     print("Taux d'erreur de segmentation :")
     print(results_df)
 
-    # Commentaires sur les résultats
-    # Vous pouvez ajouter ici des commentaires sur les résultats obtenus.
